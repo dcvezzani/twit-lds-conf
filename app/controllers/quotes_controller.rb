@@ -1,10 +1,26 @@
 class QuotesController < ApplicationController
+  include TwitterLdsConfFeed
+
   before_action :set_quote, only: [:show, :edit, :update, :destroy]
+  before_action :load_quotes, only: [:index, :list]
 
   # GET /quotes
   # GET /quotes.json
   def index
-    @quotes = Quote.all
+  end
+
+  def list
+    # @quotes_sorted = Quote.order("tweet_id desc").page (params[:page] or 1)
+    @quotes_sorted = @quotes.includes(:tags).order("tweet_id desc").page (params[:page] or 1)
+    # @users = User.order(:name).page params[:page]
+  end
+
+  # GET /lds_conf_feed
+  # GET /lds_conf_feed?feed[:count]=20
+  # GET /lds_conf_feed.json
+  def lds_conf_feed
+    resp = fetch_twitter_lds_conf_feed(feed_params[:count].to_i)
+    render json: resp.body, status: resp.code
   end
 
   # GET /quotes/1
@@ -67,8 +83,16 @@ class QuotesController < ApplicationController
       @quote = Quote.find(params[:id])
     end
 
+    def load_quotes
+      @quotes = Quote.all
+    end
+
     # Never trust parameters from the scary internet, only allow the white list through.
     def quote_params
       params.require(:quote).permit(:tweet_id, :tweet_text)
+    end
+
+    def feed_params
+      (params[:feed]) ? params[:feed].permit(:count) : {}
     end
 end

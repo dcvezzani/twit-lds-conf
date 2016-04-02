@@ -37,3 +37,5 @@ doc-tutorials
 *.log
 public/assets
 *.session
+config/settings.yml
+.byebug_history

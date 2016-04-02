@@ -44,4 +44,5 @@ group :development, :test do
 end
 
 gem 'oauth'
-
+gem 'whenever', :require => false
+gem 'kaminari'

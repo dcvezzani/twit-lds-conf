@@ -1,0 +1,22 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Listing Quotes</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Tweet</th>
+      <th>Tags</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <%= paginate @quotes_sorted %>
+    <% @quotes_sorted.each do |quote| %>
+      <tr>
+        <td><%= quote.tweet_text %></td>
+        <td><%= quote.tags.map(&:value).join(", ") %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

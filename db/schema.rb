@@ -17,10 +17,10 @@ ActiveRecord::Schema.define(version: 20160402173618) do
   enable_extension "plpgsql"
 
   create_table "quotes", force: :cascade do |t|
-    t.integer  "tweet_id"
+    t.integer  "tweet_id",   limit: 8
     t.text     "tweet_text"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
   end
 
   create_table "tags", force: :cascade do |t|
