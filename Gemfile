@@ -46,3 +46,4 @@ end
 gem 'oauth'
 gem 'whenever', :require => false
 gem 'kaminari'
+gem 'virtus'

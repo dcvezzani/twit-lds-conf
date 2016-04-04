@@ -22,6 +22,8 @@ module TwitterLdsConfFeed
       tweet_id = entry['id']
       tweet_text = entry['text']
 
+      next if(tweet_id.nil? or (tweet_id.length == 0))
+
       current_tags = Tag.all.map(&:value)
 
       tag_values = entry['entities']['hashtags'].map{|x| x['text']}

@@ -10,9 +10,13 @@ class QuotesController < ApplicationController
   end
 
   def list
-    # @quotes_sorted = Quote.order("tweet_id desc").page (params[:page] or 1)
-    @quotes_sorted = @quotes.includes(:tags).order("tweet_id desc").page (params[:page] or 1)
-    # @users = User.order(:name).page params[:page]
+    term = params[:term] ? params[:term] : nil
+
+    @quotes_sorted = if(term)
+      @quotes.where(["tweet_text like ?", "%#{term}%"]).includes(:tags).order("tweet_id desc").page (params[:page] or 1)
+    else
+      @quotes.includes(:tags).order("tweet_id desc").page (params[:page] or 1)
+    end
   end
 
   # GET /lds_conf_feed
@@ -94,5 +98,9 @@ class QuotesController < ApplicationController
 
     def feed_params
       (params[:feed]) ? params[:feed].permit(:count) : {}
+    end
+
+    def load_sorted_quotes
+      @quotes_sorted = @quotes.includes(:tags).order("tweet_id desc").page (params[:page] or 1)
     end
 end

@@ -11,10 +11,10 @@
   </thead>
 
   <tbody>
-    <%= paginate @quotes_sorted %>
+  <%= paginate @quotes_sorted %> of <%= Quote.count %>
     <% @quotes_sorted.each do |quote| %>
       <tr>
-        <td><%= quote.tweet_text %></td>
+        <td><%= raw(quote.tweet_text) %></td>
         <td><%= quote.tags.map(&:value).join(", ") %></td>
       </tr>
     <% end %>

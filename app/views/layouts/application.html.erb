@@ -8,7 +8,22 @@
 </head>
 <body>
 
+<%= button_tag "Refresh", id: "refresh_list" %>
 <%= yield %>
 
 </body>
 </html>
+
+<script>
+$(document).ready(function(){
+  $('#refresh_list').click(function(){
+    $.get("http://localhost:3000/quotes/lds_conf_feed", function(){
+      window.location.replace("http://localhost:3000/quotes/list")
+      })
+    .fail( function( jqXHR, textStatus, errorThrown ) {
+      alert( "error: " + jqXHR.responseText );
+    });
+  });
+});
+</script>
+
