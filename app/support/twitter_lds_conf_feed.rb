@@ -22,7 +22,7 @@ module TwitterLdsConfFeed
       tweet_id = entry['id']
       tweet_text = entry['text']
 
-      next if(tweet_id.nil? or (tweet_id.length == 0))
+      next if(tweet_id.nil? or (tweet_id.to_s.length == 0))
 
       current_tags = Tag.all.map(&:value)
 
@@ -71,3 +71,30 @@ module TwitterLdsConfFeed
     
 end
 
+=begin
+@settings = TwitterLdsConfFeed::Settings.load
+
+oauth_token = @settings[:AccessToken]
+oauth_token_secret = @settings[:AccessTokenSecret]
+
+count = 10
+
+class DcvTwitt
+  include TwitterLdsConfFeed
+end
+
+dcvt = DcvTwitt.new
+dcvt.send(:persist_feed_results, resp_body) if(resp.code == "200")
+
+entry = resp_body.first
+
+
+Object.send(:remove_const, :TwitterLdsConfFeed)
+Object.send(:remove_const, :DcvTwitt)
+load '/Users/davidvezzani/rails-app/twit-lds-conf/app/support/twitter_lds_conf_feed.rb'
+
+https://twitter.com/LDSquotable/status/781283602533388288
+https://twitter.com/LDSquotable/status/781221967873634304
+
+
+=end

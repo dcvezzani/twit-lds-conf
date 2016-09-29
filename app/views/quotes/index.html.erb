@@ -14,7 +14,7 @@
   <tbody>
     <% @quotes.each do |quote| %>
       <tr>
-        <td><%= quote.tweet_id %></td>
+        <td><%= link_to quote.tweet_id, twitter_url(quote.tweet_id) %></td>
         <td><%= quote.tweet_text %></td>
         <td><%= link_to 'Show', quote %></td>
         <td><%= link_to 'Edit', edit_quote_path(quote) %></td>
