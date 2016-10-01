@@ -181,6 +181,3 @@ DEPENDENCIES
   virtus
   web-console (~> 2.0)
   whenever
-
-BUNDLED WITH
-   1.10.6

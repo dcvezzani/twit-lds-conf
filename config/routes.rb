@@ -3,6 +3,7 @@ Rails.application.routes.draw do
   resources :quotes do
     collection do
       get 'list'
+      get 'latest'
       get 'lds_conf_feed'
     end
   end

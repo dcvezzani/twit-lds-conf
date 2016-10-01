@@ -32,6 +32,13 @@ class QuotesController < ApplicationController
   def show
   end
 
+  # GET /quotes/latest
+  # GET /quotes/latest.json
+  def latest
+    @quote = Quote.where(['id in (select id from quotes where created_at in (select max(created_at) max_created_at from quotes))']).first
+    render action: :latest, layout: false
+  end
+
   # GET /quotes/new
   def new
     @quote = Quote.new
