@@ -1,8 +1,11 @@
 class QuotesController < ApplicationController
   include TwitterLdsConfFeed
 
-  before_action :set_quote, only: [:show, :edit, :update, :destroy]
+  before_action :set_quote, only: [:show, :edit, :update, :destroy, :favorite]
   before_action :load_quotes, only: [:index, :list]
+  before_action :load_tags, only: [:index, :list]
+
+  attr_reader :extra_params
 
   # GET /quotes
   # GET /quotes.json
@@ -11,11 +14,32 @@ class QuotesController < ApplicationController
 
   def list
     term = params[:term] ? params[:term] : nil
+    tags = params[:tags] ? params[:tags] : []
+    filterout = params[:filterout] ? params[:filterout] : []
+    order = "created_at desc"
+    order = "tweet_id desc"
 
     @quotes_sorted = if(term)
-      @quotes.where(["tweet_text like ?", "%#{term}%"]).includes(:tags).order("tweet_id desc").page (params[:page] or 1)
+      @quotes.where(["tweet_text like ?", "%#{term}%"]).includes(:tags).order(order).page (params[:page] or 1)
+
+    elsif(!tags.empty?)
+      tags = tags.split(/ *, */) unless tags.is_a?(Array)
+      filterout = filterout.split(/ *, */) unless filterout.is_a?(Array)
+
+      # select all quotes that have all given tags
+      sub1 = Quote.joins(:tags).select('quotes.id, tags.value tvalue').where(["tags.value in (?)", tags]).to_sql.gsub(/\"/, '')
+      wtags_ids = Quote.find_by_sql(["select q1.id from (#{sub1}) as q1 group by q1.id having count(distinct q1.tvalue) > ?", (tags.length-1)]).map(&:id)
+
+      # select all records that should be filtered out
+      filter_out_ids = @quotes.joins(:tags).where(["tags.value in (?)", filterout]).map(&:id)
+
+      filtered_quotes = @quotes.where(['id in (?)', wtags_ids])
+      filtered_quotes = filtered_quotes.where(['id not in (?)', filter_out_ids]) unless filter_out_ids.empty?
+      filtered_quotes.includes(:tags).order(order).page (params[:page] or 1)
     else
-      @quotes.includes(:tags).order("tweet_id desc").page (params[:page] or 1)
+      #@quotes.includes(:tags).order(order).page (params[:page] or 1)
+      hide_ids = @quotes.joins(:tags).where(["tags.value in ('hide')"]).map(&:id)
+      @quotes.where(['id not in (?)', hide_ids]).includes(:tags).order(order).page (params[:page] or 1)
     end
   end
 
@@ -23,7 +47,7 @@ class QuotesController < ApplicationController
   # GET /lds_conf_feed?feed[:count]=20
   # GET /lds_conf_feed.json
   def lds_conf_feed
-    resp = fetch_twitter_lds_conf_feed(feed_params[:count].to_i)
+    resp = fetch_twitter_lds_conf_feed(feed_params[:count].to_i, feed_params[:screen_name])
     render json: resp.body, status: resp.code
   end
 
@@ -54,7 +78,7 @@ class QuotesController < ApplicationController
     @quote = Quote.new(quote_params)
 
     respond_to do |format|
-      if @quote.save
+      if @quote.save and @quote.add_tags!(extra_params[:tag])
         format.html { redirect_to @quote, notice: 'Quote was successfully created.' }
         format.json { render :show, status: :created, location: @quote }
       else
@@ -68,7 +92,7 @@ class QuotesController < ApplicationController
   # PATCH/PUT /quotes/1.json
   def update
     respond_to do |format|
-      if @quote.update(quote_params)
+      if @quote.update_with_tag(quote_params, extra_params)
         format.html { redirect_to @quote, notice: 'Quote was successfully updated.' }
         format.json { render :show, status: :ok, location: @quote }
       else
@@ -94,17 +118,32 @@ class QuotesController < ApplicationController
       @quote = Quote.find(params[:id])
     end
 
+    def load_tags
+      sub1 = Quote.joins(:tags).select('tags.id').where(['tweet_id >= ?', 782251540421586945]).to_sql.gsub(/\"/, '')
+      @tags = Tag.where(["id in (#{sub1})"]).where(['value like ? or value like ? or value like ?', 'Pres%', 'Elder%', 'Sister%']).order(:value)
+      # @tags = Tag.where(['value like ? or value like ? or value like ?', 'Pres%', 'Elder%', 'Sister%']).order(:value)
+    end
+
     def load_quotes
-      @quotes = Quote.all
+      order = "tweet_id desc"
+      @quotes = Quote.all.includes(:tags).order(order)
+      # @quotes = Quote.where(['tweet_id >= ?', 782251540421586945]).includes(:tags).order(order)
     end
 
     # Never trust parameters from the scary internet, only allow the white list through.
     def quote_params
-      params.require(:quote).permit(:tweet_id, :tweet_text)
+      p = params.require(:quote).permit(:tweet_id, :tweet_text, :tag, :apply, tags_attributes: [:id, :value, :_destroy])
+
+      @extra_params = {
+        tag: p.delete(:tag), 
+        is_applied: (p.delete(:apply).to_s == "true")
+      }
+
+      p
     end
 
     def feed_params
-      (params[:feed]) ? params[:feed].permit(:count) : {}
+      (params[:feed]) ? params[:feed].permit(:count, :screen_name) : {}
     end
 
     def load_sorted_quotes

@@ -2,6 +2,24 @@
 // They will automatically be included in application.css.
 // You can use Sass (SCSS) here: http://sass-lang.com/
 
+input[type=checkbox] {
+  transform: scale(3);
+}
 
+button {
+     width: 200px;
+     height: 200px;
+     margin-left: 5em;
+}
 
+ul#tag-list{
+    list-style-type: none;
+    margin: 0;
+    margin-bottom: 2em;
+    padding: 0;
+    overflow: hidden;
+}
 
+ul#tag-list li {
+    float: left;
+}

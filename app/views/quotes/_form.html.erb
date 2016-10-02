@@ -19,6 +19,17 @@
     <%= f.label :tweet_text %><br>
     <%= f.text_area :tweet_text %>
   </div>
+
+  <h3>Tags</h3>
+  <div id="tags">
+    <%= f.fields_for :tags do |tag| %>
+      <%= render 'tag_fields', f: tag %>
+    <% end %>
+    <div class="links">
+      <%= link_to_add_association 'add tag', f, :tags %>
+    </div>
+  </div>
+
   <div class="actions">
     <%= f.submit %>
   </div>

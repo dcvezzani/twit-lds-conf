@@ -10,5 +10,10 @@
   <%= @quote.tweet_text %>
 </p>
 
+<p>
+  <strong>Tags:</strong>
+  <%= @quote.tags.map(&:value).join(", ") %>
+</p>
+
 <%= link_to 'Edit', edit_quote_path(@quote) %> |
 <%= link_to 'Back', quotes_path %>

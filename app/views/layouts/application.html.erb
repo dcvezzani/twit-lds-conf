@@ -8,7 +8,8 @@
 </head>
 <body>
 
-<%= button_tag "Refresh", id: "refresh_list" %>
+<%= button_tag "Refresh 1", id: "refresh_list" %>
+<%= button_tag "Refresh 2", id: "refresh_list_2" %>
 <%= yield %>
 
 </body>
@@ -16,14 +17,73 @@
 
 <script>
 $(document).ready(function(){
+  var ipaddr = '10.0.0.222';
+  var ipaddr = 'localhost';
+
   $('#refresh_list').click(function(){
-    $.get("http://localhost:3000/quotes/lds_conf_feed", function(){
-      window.location.replace("http://localhost:3000/quotes/list")
+    // $.get("http://localhost:3001/quotes/lds_conf_feed?feed[count]=200", function(){
+    $.get("http://" + ipaddr + ":3001/quotes/lds_conf_feed", function(){
+      window.location.replace("http://" + ipaddr + ":3001/quotes/list")
       })
     .fail( function( jqXHR, textStatus, errorThrown ) {
       alert( "error: " + jqXHR.responseText );
     });
   });
+
+  $('#refresh_list_2').click(function(){
+    // $.get("http://localhost:3001/quotes/lds_conf_feed?feed[count]=200", function(){
+    // &feed[count]=200
+    $.get("http://" + ipaddr + ":3001/quotes/lds_conf_feed?feed[screen_name]=ldsconf&feed[count]=50", function(){
+      window.location.replace("http://" + ipaddr + ":3001/quotes/list")
+      })
+    .fail( function( jqXHR, textStatus, errorThrown ) {
+      alert( "error: " + jqXHR.responseText );
+    });
+  });
+
+  $('.favorite').click(function(){
+    var is_applied = $(this).is(':checked');
+    var authenticity_token = $("meta[name='csrf-token']").attr('content');
+    // var quote_id = $($("input[type='checkbox'].favorite")[1]).attr('id').replace(/^favorite-quote-(.*)/, '$1');
+    var quote_id = $(this).attr('id').replace(/^favorite-quote-(.*)/, '$1');
+    var self = this;
+
+    $.post("http://" + ipaddr + ":3001/quotes/" + quote_id + ".json", 
+        {_method: 'patch', authenticity_token: authenticity_token, quote: {tag: 'favorite', apply: is_applied}, utf8: '✓'}, 
+        function(data){
+          var tags = [];
+          for(var i=0; i < data['tags'].length; i++){
+            tags[tags.length] = data['tags'][i]['value'];
+          }
+          $($(self).closest('tr').find('td')[1]).html(tags.join(", "))
+          console.log(tags.join(", "));
+
+          //window.location.replace("http://" + ipaddr + ":3001/quotes/list")
+    })
+    .fail( function( jqXHR, textStatus, errorThrown ) {
+      alert( "error: " + jqXHR.responseText );
+    });
+  });
+  
+  $('.hide').click(function(){
+    var is_applied = $(this).is(':checked');
+    var authenticity_token = $("meta[name='csrf-token']").attr('content');
+    var quote_id = $(this).attr('id').replace(/^hide-quote-(.*)/, '$1');
+    var self = this;
+
+    $.post("http://" + ipaddr + ":3001/quotes/" + quote_id + ".json", 
+        {_method: 'patch', authenticity_token: authenticity_token, quote: {tag: 'hide', apply: is_applied}, utf8: '✓'}, 
+        function(){
+          console.log("asdf");
+          //window.location.replace("http://" + ipaddr + ":3001/quotes/list")
+          $(self).closest('tr').hide()
+          console.log("qwer");
+    })
+    .fail( function( jqXHR, textStatus, errorThrown ) {
+      alert( "error: " + jqXHR.responseText );
+    });
+  });
+  
 });
 </script>
 

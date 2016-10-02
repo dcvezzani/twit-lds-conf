@@ -1,13 +1,13 @@
 module TwitterLdsConfFeed
   
-  def fetch_twitter_lds_conf_feed(count)
+  def fetch_twitter_lds_conf_feed(count, screen_name='LDSquotable')
     count = (count) ? count : 20
     count = 200 if count > 200
 
     @settings = Settings.load
 
     access_token = prepare_access_token(@settings[:AccessToken], @settings[:AccessTokenSecret])
-    resp = access_token.request(:get, "https://api.twitter.com/1.1/statuses/user_timeline.json?count=#{count}&screen_name=LDSquotable")
+    resp = access_token.request(:get, "https://api.twitter.com/1.1/statuses/user_timeline.json?count=#{count}&screen_name=#{screen_name}")
 
     resp_body = JSON.load(resp.body)
     persist_feed_results(resp_body) if(resp.code == "200")

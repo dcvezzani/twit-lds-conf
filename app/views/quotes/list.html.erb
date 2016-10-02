@@ -2,21 +2,41 @@
 
 <h1>Listing Quotes</h1>
 
+<ul id='tag-list'>
+<% @tags.each do |tag| %>
+  <li id="tag-<%=tag.id%>"><%= link_to tag.value, list_quotes_path(tags: tag.value, filterout: 'hide') %> (<%= link_to 'all', list_quotes_path(tags: tag.value) %>, <%= link_to 'fav', list_quotes_path(tags: [tag.value, 'favorite'], filterout: 'hide') %>) | </li>
+<% end %>
+</ul>
+
+<%= paginate @quotes_sorted %> of <%= @quotes_sorted.total_count %> (<%= Quote.count %>) 
+
 <table>
   <thead>
     <tr>
       <th>Tweet</th>
       <th>Tags</th>
+      <th>Fav</th>
+      <th>Hid</th>
     </tr>
   </thead>
 
   <tbody>
-  <%= paginate @quotes_sorted %> of <%= Quote.count %>
     <% @quotes_sorted.each do |quote| %>
       <tr>
         <td><%= raw(quote.tweet_text) %></td>
         <td><%= quote.tags.map(&:value).join(", ") %></td>
+        <td>
+          <%= hidden_field_tag("favorite-quote-#{quote.id}", '0') -%>
+          <%= check_box_tag("favorite-quote-#{quote.id}", '1', quote.tags.map(&:value).include?('favorite'), {class: "favorite quote-#{quote.id}"}) %>
+        </td>
+        <td>
+          <%= hidden_field_tag("hide-quote-#{quote.id}", '0') -%>
+          <%= check_box_tag("hide-quote-#{quote.id}", '1', quote.tags.map(&:value).include?('hide'), {class: "hide quote-#{quote.id}"}) %>
+        </td>
       </tr>
     <% end %>
   </tbody>
 </table>
+
+<%= paginate @quotes_sorted %> of <%= @quotes_sorted.total_count %> (<%= Quote.count %>)
+

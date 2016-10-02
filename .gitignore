@@ -20,7 +20,6 @@ open.sh
 start.sh
 work
 app/rtf_templates
-bin
 .bundle
 db/*.sqlite3
 tmp/

@@ -47,3 +47,7 @@ gem 'oauth'
 gem 'whenever', :require => false
 gem 'kaminari'
 gem 'virtus'
+
+gem "cocoon"
+
+# use https://github.com/mbleigh/acts-as-taggable-on instead of home baked tags
