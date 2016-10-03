@@ -1,0 +1,8 @@
+<% @quotes_by_author.keys.each do |author| %>
+  <h4 class="author"><%= author%></h4>
+  <ul class="quotes">
+    <% @quotes_by_author[author].each do |quote| %>
+      <li class="quote"><span class="tweet_text"><%= quote[:tweet_text] %></span> <span class="tags"><%= quote[:tag_values] %></span></li>
+    <% end %>
+  </ul>
+<% end %>

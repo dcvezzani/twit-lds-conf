@@ -12,6 +12,36 @@ class QuotesController < ApplicationController
   def index
   end
 
+  def conference_quotes
+    sub1 = Quote.joins(:tags).select('tags.id').where(['tweet_id >= ?', 782251540421586945]).to_sql.gsub(/\"/, '')
+    tag_ids = Tag.where(["id in (#{sub1})"]).where(['value like ? or value like ? or value like ?', 'Pres%', 'Elder%', 'Sister%']).order(:value).select('tags.id').map(&:id)
+
+    quote_tag_fields_01 = "quotes.tweet_id, quotes.id, quotes.tweet_text"
+    quote_tag_fields_02 = "tags.value, #{quote_tag_fields_01}"
+    @quotes = Quote.joins(:tags).joins(', quotes q2 INNER JOIN tags_quotes tq2 ON tq2.quote_id = q2.id INNER JOIN tags t2 ON t2.id = tq2.tag_id').where('quotes.id = q2.id').where(['tags.id in (?)', tag_ids]).select("tags.value as tag_value, #{quote_tag_fields_01}, string_agg(t2.value, ', ' ORDER BY t2.value) as tag_values").group(quote_tag_fields_02).order(quote_tag_fields_02)
+
+    # @quotes = Quote.find_by_sql("SELECT tags.value as tag_value, quotes.tweet_id, quotes.id, quotes.tweet_text, string_agg(t2.value, ', ' ORDER BY t2.value) as tag_values FROM quotes INNER JOIN tags_quotes ON tags_quotes.quote_id = quotes.id INNER JOIN tags ON tags.id = tags_quotes.tag_id, quotes q2 INNER JOIN tags_quotes tq2 ON tq2.quote_id = q2.id INNER JOIN tags t2 ON t2.id = tq2.tag_id WHERE ((quotes.id = q2.id) and (tags.id in (62,92,74,40,97,20,49,73,63,80,16,19,88,99,90,27,58,56,94,98,57,25,77,23,59,55,101,81,12,95,22))) GROUP BY tags.value, quotes.tweet_id, quotes.id, quotes.tweet_text  ORDER BY tags.value, quotes.tweet_id, quotes.id, quotes.tweet_text")
+
+=begin
+rails generate decorator Quote
+=end
+    # @quotes.map{|x| x.attributes['tag_value']}
+
+
+    @quotes_by_author = @quotes.inject({}){ |hash, quote| 
+      if(!hash.has_key?(quote.tag_value))
+        hash[quote.tag_value] = []
+      end
+      hash[quote.tag_value] << {id: quote.id, tweet_id: quote.tweet_id, tweet_text: quote.tweet_text, tag_values: quote.tag_values}
+      hash
+    }
+    
+    respond_to do |format|
+      format.html { render :conference_quotes }
+      format.json { render :conference_quotes, status: :created, location: @quotes.first }
+    end
+  end
+
   def list
     term = params[:term] ? params[:term] : nil
     tags = params[:tags] ? params[:tags] : []

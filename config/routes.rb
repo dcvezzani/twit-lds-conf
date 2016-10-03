@@ -5,6 +5,7 @@ Rails.application.routes.draw do
       get 'list'
       get 'latest'
       get 'lds_conf_feed'
+      get 'conference_quotes'
     end
   end
   # The priority is based upon order of creation: first created -> highest priority.
